@@ -1,14 +1,15 @@
 <!doctype html>
 <html>
 <head>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="board.js"></script>
 </head>
 <body>
 <script>
 
-var w = 300;
-var h = 500;
+var w = $(window).width();
+var h = $(window).height();
 
 var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
 
@@ -16,6 +17,37 @@ var b = new Board(3,3);
 
 // for object constancy
 function key(d) { return d.key; }
+
+var stopped = false;
+function stop() {
+	stopped = true;
+	svg.selectAll("g")
+	   .transition()
+	   .duration(0);
+
+
+	svg.append("rect")
+	   .attr("width", w)
+	   .attr("height", h)
+	   .transition()
+	   .attr("opacity", 0.8)
+	   .attr("fill","red");
+
+}
+
+var clicked = 0;
+
+function manageClick(color, row) {
+  if (color==0) {
+  	stop();
+  }
+  else {
+  	if (row == (clicked+1)) {
+  		clicked++;
+  	}
+  }
+}
+
 
 svg.selectAll("g")
    .data(b.dataset, key)
@@ -25,13 +57,18 @@ svg.selectAll("g")
       return "translate(0, " + (i*(h/b.cols)) + ")";
      })
     .selectAll("rect")
-    .data(function(d){return d.row;})
+    .data(function(d){
+    	//passing also the row at every rect
+    	return d.row.map(function(x){return {key:d.key, color:x};});
+    })
     .enter()
     .append("rect")
       .attr("x", function(d,i){return i*(w/b.cols);})
       .attr("width", w/b.cols)
       .attr("height", h/b.rows)
-      .attr("fill", function(d){ return d==1 ? "black" : "white";});
+      .attr("fill", function(d){ return d.color==1 ? "black" : "white";})
+      .on("click", function(d){manageClick(d.color, d.key);})
+      .on("touch", function(d){manageClick(d.color, d.key);});
 
 
 function rand(min,max) {
@@ -65,7 +102,7 @@ function slide(slideSpeed) {
       var y = d3.transform(d3.select(this).attr("transform")).translate[1];
       return "translate(0," + (y+(h/b.rows)) + ")";
     })
-    .attr("fill", "red")
+    .each("end", function() {if(b.slideCounter > c) stop();})
     .remove();
 
   // selection of the new group, not visible yet
@@ -77,13 +114,18 @@ function slide(slideSpeed) {
 
   // creating rects into the new group
   entering.selectAll("rect")
-    .data(function(d){return d.row;})
+    .data(function(d){
+    	//passing also the row at every rect
+    	return d.row.map(function(x){return {key:d.key, color:x};});
+    })
     .enter()
     .append("rect")
       .attr("x", function(d,i){return i*(w/b.cols);})
       .attr("width", w/b.cols)
       .attr("height", h/b.rows)
-      .attr("fill", function(d){ return d==1 ? "black" : "white";});
+      .attr("fill", function(d){ return d.color==1 ? "black" : "white";})
+      .on("click", function(d){manageClick(d.color, d.key);})
+      .on("touch", function(d){manageClick(d.color, d.key);});
 
   entering.transition()
     .duration(slideSpeed * b.rows)
@@ -92,13 +134,16 @@ function slide(slideSpeed) {
       var y = d3.transform(d3.select(this).attr("transform")).translate[1];
       return "translate(0," + (y+(h/b.rows)) + ")";
     })
-    .each("end", function(){slide(slideSpeed);});
+    .each("end", function(){
+    	if (!stopped) slide(slideSpeed-=10);
+    	
+    });
     //recursion (note: by-design the transition involves only one element,
     //so only one recursive call will be done)
     
 }
 
-slide(200);
+slide(500);
 
 </script>
 </body>

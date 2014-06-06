@@ -4,7 +4,8 @@ function Board(rows, cols) {
   this.dataset = [];
   this.rows = rows;
   this.cols = cols;
-  
+  this.slideCounter = 0;
+
   for (var i=0; i<rows; i++) {
     this.addRow();
   }
@@ -26,4 +27,7 @@ Board.prototype.removeRow = function () {
 Board.prototype.slide = function () {
   this.removeRow();
   this.addRow();
+  this.slideCounter++;
 }
+
+
