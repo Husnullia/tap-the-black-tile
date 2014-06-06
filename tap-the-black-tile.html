@@ -102,7 +102,7 @@ function slide(slideSpeed) {
       var y = d3.transform(d3.select(this).attr("transform")).translate[1];
       return "translate(0," + (y+(h/b.rows)) + ")";
     })
-    .each("end", function() {if(b.slideCounter > c) stop();})
+    .each("end", function() {if(b.slideCounter > clicked) stop();})
     .remove();
 
   // selection of the new group, not visible yet
