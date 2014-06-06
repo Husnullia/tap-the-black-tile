@@ -13,6 +13,13 @@ var h = $(window).height();
 
 var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
 
+var text = svg.append("text")
+              .attr("x", w/2)
+              .attr("y", 50)
+              .attr("font-size", "100px")
+              .attr("fill", "black")
+              .text("00");
+;
 var b = new Board(3,3);
 
 // for object constancy
@@ -42,8 +49,10 @@ function manageClick(color, row) {
   	stop();
   }
   else {
+  	console.log("row: "+row);
   	if (row == (clicked+1)) {
   		clicked++;
+  		console.log("++");
   	}
   }
 }
@@ -102,7 +111,12 @@ function slide(slideSpeed) {
       var y = d3.transform(d3.select(this).attr("transform")).translate[1];
       return "translate(0," + (y+(h/b.rows)) + ")";
     })
-    .each("end", function() {if(b.slideCounter > clicked) stop();})
+    .each("end", function() {
+    	if(b.slideCounter > clicked) {
+    		console.log(b.slideCounter + " " + clicked);
+    		stop();
+    	}
+    })
     .remove();
 
   // selection of the new group, not visible yet

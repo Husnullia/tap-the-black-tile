@@ -1,6 +1,6 @@
 
 function Board(rows, cols) {
-  this.keyCounter = 0;
+  this.keyCounter = 1;
   this.dataset = [];
   this.rows = rows;
   this.cols = cols;
