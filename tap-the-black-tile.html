@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="board.js"></script>
+</head>
+<body>
+<script>
+
+var w = 300;
+var h = 500;
+
+var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
+
+var b = new Board(3,3);
+
+// for object constancy
+function key(d) { return d.key; }
+
+svg.selectAll("g")
+   .data(b.dataset, key)
+   .enter()
+   .append("g")
+     .attr("transform", function(d,i){
+      return "translate(0, " + (i*(h/b.cols)) + ")";
+     })
+    .selectAll("rect")
+    .data(function(d){return d.row;})
+    .enter()
+    .append("rect")
+      .attr("x", function(d,i){return i*(w/b.cols);})
+      .attr("width", w/b.cols)
+      .attr("height", h/b.rows)
+      .attr("fill", function(d){ return d==1 ? "black" : "white";});
+
+
+function rand(min,max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+function slide(slideSpeed) {
+  b.slide();
+
+
+  // selection of the groups
+  var gs = svg.selectAll("g")
+              .data(b.dataset, key);
+
+  // sliding the groups that will be again visible
+  gs.transition()
+    .duration(slideSpeed * b.rows)
+    .ease("linear")
+    .attr("transform", function(d) {
+      var y = d3.transform(d3.select(this).attr("transform")).translate[1];
+      return "translate(0," + (y+(h/b.rows)) + ")";
+    });;
+
+  // moving out the exiting group
+  gs.exit()
+    .transition()
+    .duration(slideSpeed * b.rows)
+    .ease("linear")
+    .attr("transform", function(d) {
+      var y = d3.transform(d3.select(this).attr("transform")).translate[1];
+      return "translate(0," + (y+(h/b.rows)) + ")";
+    })
+    .attr("fill", "red")
+    .remove();
+
+  // selection of the new group, not visible yet
+  var entering = gs.enter()
+                  .append("g")
+                  .attr("transform", function(d){
+                     return "translate(0, " + (0-h/b.rows) + ")";
+                   });
+
+  // creating rects into the new group
+  entering.selectAll("rect")
+    .data(function(d){return d.row;})
+    .enter()
+    .append("rect")
+      .attr("x", function(d,i){return i*(w/b.cols);})
+      .attr("width", w/b.cols)
+      .attr("height", h/b.rows)
+      .attr("fill", function(d){ return d==1 ? "black" : "white";});
+
+  entering.transition()
+    .duration(slideSpeed * b.rows)
+    .ease("linear")
+    .attr("transform", function(d) {
+      var y = d3.transform(d3.select(this).attr("transform")).translate[1];
+      return "translate(0," + (y+(h/b.rows)) + ")";
+    })
+    .each("end", function(){slide(slideSpeed);});
+    //recursion (note: by-design the transition involves only one element,
+    //so only one recursive call will be done)
+    
+}
+
+slide(200);
+
+</script>
+</body>
+</html>
