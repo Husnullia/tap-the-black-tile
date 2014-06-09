@@ -13,13 +13,8 @@ var h = $(window).height();
 
 var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
 
-var text = svg.append("text")
-              .attr("x", w/2)
-              .attr("y", 50)
-              .attr("font-size", "100px")
-              .attr("fill", "black")
-              .text("00");
-;
+
+
 var b = new Board(3,3);
 
 // for object constancy
@@ -37,7 +32,7 @@ function stop() {
 	   .attr("width", w)
 	   .attr("height", h)
 	   .transition()
-	   .attr("opacity", 0.8)
+	   .attr("opacity", 0.7)
 	   .attr("fill","red");
 
 }
@@ -49,10 +44,16 @@ function manageClick(color, row) {
   	stop();
   }
   else {
-  	console.log("row: "+row);
-  	if (row == (clicked+1)) {
-  		clicked++;
-  		console.log("++");
+    if (row == (clicked+1)) {
+  	  svg.selectAll("g").filter(function(d){
+           return d.key==row?true:false;
+         })
+  	     .selectAll("rect").filter(function(d){
+  	       return d.color==color?true:false;
+         })
+         .attr("fill", "grey"); 		
+
+      clicked++;
   	}
   }
 }
@@ -62,6 +63,7 @@ svg.selectAll("g")
    .data(b.dataset, key)
    .enter()
    .append("g")
+     .attr("row", function(d){return d.key;})
      .attr("transform", function(d,i){
       return "translate(0, " + (i*(h/b.cols)) + ")";
      })
@@ -72,6 +74,7 @@ svg.selectAll("g")
     })
     .enter()
     .append("rect")
+      .attr("color", function(d){return d.color;})
       .attr("x", function(d,i){return i*(w/b.cols);})
       .attr("width", w/b.cols)
       .attr("height", h/b.rows)
@@ -122,6 +125,7 @@ function slide(slideSpeed) {
   // selection of the new group, not visible yet
   var entering = gs.enter()
                   .append("g")
+                  .attr("row", function(d){return d.key;})
                   .attr("transform", function(d){
                      return "translate(0, " + (0-h/b.rows) + ")";
                    });
@@ -134,6 +138,7 @@ function slide(slideSpeed) {
     })
     .enter()
     .append("rect")
+      .attr("color", function(d){return d.color;})
       .attr("x", function(d,i){return i*(w/b.cols);})
       .attr("width", w/b.cols)
       .attr("height", h/b.rows)
@@ -149,7 +154,7 @@ function slide(slideSpeed) {
       return "translate(0," + (y+(h/b.rows)) + ")";
     })
     .each("end", function(){
-    	if (!stopped) slide(slideSpeed-=10);
+    	if (!stopped) slide(slideSpeed-=5);
     	
     });
     //recursion (note: by-design the transition involves only one element,
@@ -157,7 +162,7 @@ function slide(slideSpeed) {
     
 }
 
-slide(500);
+slide(400);
 
 </script>
 </body>
